@@ -1,0 +1,93 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\title{Calculation Module Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This module serves as a configuration hub for the physical risk assessment system. It defines default hazard models, vulnerability models, and risk measure calculators for various asset types. The module also includes a factory class for creating risk measure calculators based on specific use cases.
+
+\section{Imports}
+
+The module imports various components from the \texttt{physrisk} package, including hazard models, vulnerability models, and risk calculators. It also imports asset types from a local \texttt{.assets} module.
+
+\section{Functions}
+
+\subsection{\texttt{get\_default\_hazard\_model() -> HazardModel}}
+
+Returns the default hazard model, which is a \texttt{ZarrHazardModel} that retrieves hazard event data from Zarr storage.
+
+\subsection{\texttt{get\_default\_vulnerability\_models() -> Dict[type, Sequence[VulnerabilityModelBase]]}}
+
+Returns a dictionary mapping asset types to sequences of vulnerability models. This function defines the default vulnerability models for different asset types:
+
+\begin{itemize}
+    \item \texttt{Asset}: Generic asset models (placeholder for unknown assets)
+    \item \texttt{PowerGeneratingAsset}: Inundation model
+    \item \texttt{RealEstateAsset}: Models for coastal and riverine inundation, tropical cyclones, and cooling
+    \item \texttt{IndustrialActivity}: Chronic heat model
+    \item \texttt{ThermalPowerGeneratingAsset}: Models for various thermal power plant vulnerabilities
+    \item \texttt{TestAsset}: Temperature model
+\end{itemize}
+
+\subsection{\texttt{get\_default\_risk\_measure\_calculators() -> Dict[Type[Asset], RiskMeasureCalculator]}}
+
+Returns a dictionary mapping asset types to risk measure calculators. Currently, it only defines a calculator for \texttt{RealEstateAsset}.
+
+\section{Classes}
+
+\subsection{\texttt{DefaultMeasuresFactory(RiskMeasuresFactory)}}
+
+A factory class for creating risk measure calculators based on specific use cases.
+
+Methods:
+\begin{itemize}
+    \item \texttt{calculators(self, use\_case\_id: str) -> Dict[Type[Asset], RiskMeasureCalculator]}:
+    \begin{itemize}
+        \item If \texttt{use\_case\_id} is "generic", returns a dictionary with a \texttt{GenericScoreBasedRiskMeasures} calculator for the \texttt{Asset} type.
+        \item Otherwise, returns the result of \texttt{get\_default\_risk\_measure\_calculators()}.
+    \end{itemize}
+\end{itemize}
+
+\section{Key Components}
+
+\begin{enumerate}
+    \item \textbf{Hazard Model}: The default hazard model uses Zarr storage for retrieving hazard event data.
+
+    \item \textbf{Vulnerability Models}: 
+    \begin{itemize}
+        \item For generic assets, placeholder models are used for various hazards (fire, chronic heat, hail, drought, precipitation).
+        \item Specific models are defined for power generating assets, real estate assets, industrial activities, and thermal power generating assets.
+        \item These models cover a range of hazards including inundation, tropical cyclones, chronic heat, and various thermal power plant-specific vulnerabilities.
+    \end{itemize}
+
+    \item \textbf{Risk Measure Calculators}: 
+    \begin{itemize}
+        \item The default setup includes a specific calculator for real estate assets (\texttt{RealEstateToyRiskMeasures}).
+        \item The \texttt{DefaultMeasuresFactory} allows for dynamic selection of risk measure calculators based on the use case.
+    \end{itemize}
+\end{enumerate}
+
+\section{Usage Notes}
+
+\begin{enumerate}
+    \item This module serves as a central configuration point for the physical risk assessment system. Users can modify these functions to customize the models and calculators used in their assessments.
+
+    \item The \texttt{get\_default\_vulnerability\_models()} function allows for easy extension to support new asset types or vulnerability models.
+
+    \item The \texttt{DefaultMeasuresFactory} class provides a flexible way to select risk measure calculators based on different use cases. Users can extend this class to support additional use cases.
+
+    \item When adding new asset types or models, ensure they are imported correctly and added to the appropriate dictionaries in this module.
+
+    \item The use of placeholder vulnerability models (e.g., \texttt{PlaceholderVulnerabilityModel}) suggests that some parts of the system may still be under development or pending more specific implementations.
+\end{enumerate}
+
+\end{document}

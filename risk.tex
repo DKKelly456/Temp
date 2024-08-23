@@ -1,0 +1,185 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Risk Model Module Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This module defines classes and functions for risk modeling and calculation, focusing on asset-level risk assessment across various hazards, scenarios, and years. It includes base classes for risk models, risk measure calculators, and implementations for asset-level risk assessment.
+
+\section{Key Components}
+
+\subsection{Data Structures}
+
+\subsubsection{\texttt{BatchId} (NamedTuple)}
+\begin{itemize}
+    \item \texttt{scenario} (str): The scenario being modeled
+    \item \texttt{key\_year} (Optional[int]): The year of the scenario (None for historical)
+\end{itemize}
+
+\subsubsection{\texttt{MeasureKey} (NamedTuple)}
+\begin{itemize}
+    \item \texttt{asset} (Asset): The asset being assessed
+    \item \texttt{prosp\_scen} (str): The prospective scenario
+    \item \texttt{year} (int): The year of assessment
+    \item \texttt{hazard\_type} (type): The type of hazard
+\end{itemize}
+
+\subsubsection{\texttt{Measure} (dataclass)}
+\begin{itemize}
+    \item \texttt{score} (Category): The risk category
+    \item \texttt{measure\_0} (float): A numerical measure of risk
+    \item \texttt{definition} (ScoreBasedRiskMeasureDefinition): Reference to the measure definition
+\end{itemize}
+
+\subsection{Classes}
+
+\subsubsection{\texttt{RiskModel} (Base Class)}
+Base class for risk models that use hazard and vulnerability models.
+
+Methods:
+\begin{itemize}
+    \item \texttt{\_\_init\_\_(self, hazard\_model: HazardModel, vulnerability\_models: VulnerabilityModels)}
+    \item \texttt{calculate\_risk\_measures(self, assets: Sequence[Asset], prosp\_scens: Sequence[str], years: Sequence[int])} (abstract)
+    \item \texttt{\_calculate\_all\_impacts(self, assets: Sequence[Asset], prosp\_scens: Sequence[str], years: Sequence[int], include\_histo: bool = False)}
+    \item \texttt{\_calculate\_single\_impact(self, assets: Sequence[Asset], scenario: str, year: int)}
+\end{itemize}
+
+\subsubsection{\texttt{RiskMeasureCalculator} (Protocol)}
+Protocol defining the interface for risk measure calculators.
+
+Methods:
+\begin{itemize}
+    \item \texttt{calc\_measure(self, hazard\_type: Type[Hazard], base\_impact: AssetImpactResult, impact: AssetImpactResult) -> Optional[Measure]}
+    \item \texttt{get\_definition(self, hazard\_type: Type[Hazard]) -> ScoreBasedRiskMeasureDefinition}
+    \item \texttt{supported\_hazards(self) -> Set[type]}
+    \item \texttt{aggregate\_risk\_measures(self, measures: Dict[MeasureKey, Measure], assets: Sequence[Asset], prosp\_scens: Sequence[str], years: Sequence[int]) -> Dict[MeasureKey, Measure]}
+\end{itemize}
+
+\subsubsection{\texttt{RiskMeasuresFactory} (Protocol)}
+Protocol for factories that create risk measure calculators.
+
+Methods:
+\begin{itemize}
+    \item \texttt{calculators(self, use\_case\_id: str) -> Dict[Type[Asset], RiskMeasureCalculator]}
+\end{itemize}
+
+\subsubsection{\texttt{AssetLevelRiskModel} (Inherits from RiskModel)}
+Implements risk calculation at the asset level.
+
+Methods:
+\begin{itemize}
+    \item \texttt{\_\_init\_\_(self, hazard\_model: HazardModel, vulnerability\_models: VulnerabilityModels, measure\_calculators: Dict[type, RiskMeasureCalculator])}
+    \item \texttt{calculate\_impacts(self, assets: Sequence[Asset], prosp\_scens: Sequence[str], years: Sequence[int])}
+    \item \texttt{populate\_measure\_definitions(self, assets: Sequence[Asset]) -> Tuple[Dict[Type[Hazard], List[str]], Dict[ScoreBasedRiskMeasureDefinition, str]]}
+    \item \texttt{calculate\_risk\_measures(self, assets: Sequence[Asset], prosp\_scens: Sequence[str], years: Sequence[int])}
+\end{itemize}
+
+\subsection{Key Functions}
+
+\begin{itemize}
+    \item \texttt{calculate\_impacts}: Calculates impacts for given assets, scenarios, and years.
+    \item \texttt{populate\_measure\_definitions}: Populates measure definitions for given assets.
+    \item \texttt{calculate\_risk\_measures}: Calculates risk measures for given assets, scenarios, and years.
+\end{itemize}
+
+\section{Detailed Class Descriptions}
+
+\subsection{RiskModel}
+
+Base class for risk models, providing common functionality for impact calculation.
+
+\subsubsection{Key Methods:}
+\begin{itemize}
+    \item \texttt{\_calculate\_all\_impacts}: Calculates impacts for all scenarios and years using concurrent execution.
+    \item \texttt{\_calculate\_single\_impact}: Calculates impacts for a single scenario and year.
+\end{itemize}
+
+\subsection{AssetLevelRiskModel}
+
+Implements asset-level risk calculation.
+
+\subsubsection{Key Features:}
+\begin{itemize}
+    \item Uses concurrent execution for impact calculations.
+    \item Supports multiple hazard types, scenarios, and years.
+    \item Aggregates risk measures across different calculators.
+\end{itemize}
+
+\subsubsection{Key Methods:}
+\begin{itemize}
+    \item \texttt{calculate\_impacts}: Calculates impacts for given assets, scenarios, and years.
+    \item \texttt{populate\_measure\_definitions}: Generates measure definitions and IDs for hazards and assets.
+    \item \texttt{calculate\_risk\_measures}: Calculates and aggregates risk measures for assets.
+\end{itemize}
+
+\section{Usage Example}
+
+\begin{lstlisting}[language=Python]
+hazard_model = SomeHazardModel()
+vulnerability_models = SomeVulnerabilityModels()
+measure_calculators = {AssetType: SomeMeasureCalculator()}
+
+risk_model = AssetLevelRiskModel(hazard_model, vulnerability_models, measure_calculators)
+
+assets = [Asset1, Asset2, ...]
+scenarios = ["RCP4.5", "RCP8.5"]
+years = [2030, 2050]
+
+impacts, measures = risk_model.calculate_risk_measures(assets, scenarios, years)
+\end{lstlisting}
+
+\section{Notes}
+
+\begin{enumerate}
+    \item The module uses concurrent execution for performance optimization in impact calculations.
+    \item Risk measures are calculated based on both historical and future impacts.
+    \item The model supports aggregation of risk measures across different hazards and assets.
+    \item Error handling is implemented in the concurrent execution part, but could be expanded.
+\end{enumerate}
+
+\section{Potential Improvements}
+
+\begin{enumerate}
+    \item Implement more robust error handling and logging.
+    \item Add more documentation strings to methods for better inline documentation.
+    \item Consider implementing caching mechanisms for frequently accessed data.
+    \item Optimize the aggregation process in \texttt{calculate\_risk\_measures} method.
+    \item Implement unit tests to ensure the reliability of the risk calculations.
+\end{enumerate}
+
+\end{document}

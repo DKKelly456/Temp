@@ -1,0 +1,159 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{calculate\_exposures Function Detailed Explanation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Function Signature}
+
+\begin{lstlisting}[language=Python]
+def calculate_exposures(
+    assets: List[Asset],
+    hazard_model: HazardModel,
+    exposure_measure: ExposureMeasure,
+    scenario: str,
+    year: int,
+) -> Dict[Asset, AssetExposureResult]:
+\end{lstlisting}
+
+\section{Purpose}
+
+The \texttt{calculate\_exposures} function is the main entry point for calculating exposure results for a list of assets. It orchestrates the process of requesting hazard data, applying the exposure measure, and collecting the results.
+
+\section{Parameters}
+
+\begin{enumerate}
+    \item \texttt{assets: List[Asset]}: A list of assets for which to calculate exposures.
+    \item \texttt{hazard\_model: HazardModel}: The model used to provide hazard data.
+    \item \texttt{exposure\_measure: ExposureMeasure}: The measure used to calculate exposures (e.g., JupterExposureMeasure).
+    \item \texttt{scenario: str}: The climate scenario to use (e.g., "RCP8.5").
+    \item \texttt{year: int}: The year for which to calculate exposures.
+\end{enumerate}
+
+\section{Return Value}
+
+\texttt{Dict[Asset, AssetExposureResult]}: A dictionary mapping each asset to its calculated exposure result.
+
+\section{Key Steps}
+
+\subsection{Data Request Consolidation}
+\begin{lstlisting}[language=Python]
+requester_assets: Dict[DataRequester, List[Asset]] = {exposure_measure: assets}
+asset_requests, responses = _request_consolidated(
+    hazard_model, requester_assets, scenario, year
+)
+\end{lstlisting}
+\begin{itemize}
+    \item Consolidates data requests for all assets using the given exposure measure.
+    \item Uses a helper function \texttt{\_request\_consolidated} to efficiently request data from the hazard model.
+\end{itemize}
+
+\subsection{Logging}
+\begin{lstlisting}[language=Python]
+logging.info(
+    "Applying exposure measure {0} to {1} assets of type {2}".format(
+        type(exposure_measure).__name__, len(assets), type(assets[0]).__name__
+    )
+)
+\end{lstlisting}
+\begin{itemize}
+    \item Logs information about the exposure calculation process.
+\end{itemize}
+
+\subsection{Exposure Calculation Loop}
+\begin{lstlisting}[language=Python]
+for asset in assets:
+    requests = asset_requests[(exposure_measure, asset)]
+    hazard_data = [responses[req] for req in get_iterable(requests)]
+    result[asset] = AssetExposureResult(
+        hazard_categories=exposure_measure.get_exposures(asset, hazard_data)
+    )
+\end{lstlisting}
+\begin{itemize}
+    \item Iterates through each asset.
+    \item Retrieves the specific hazard data responses for the asset.
+    \item Applies the exposure measure to calculate exposures.
+    \item Stores the result in an \texttt{AssetExposureResult} object.
+\end{itemize}
+
+\section{Key Features}
+
+\begin{enumerate}
+    \item \textbf{Batch Processing}: Calculates exposures for multiple assets in a single function call.
+
+    \item \textbf{Flexible Hazard Model}: Uses a generic \texttt{HazardModel} interface, allowing for different implementations.
+
+    \item \textbf{Customizable Exposure Measure}: Accepts any implementation of \texttt{ExposureMeasure}, enabling different exposure calculation methodologies.
+
+    \item \textbf{Efficient Data Retrieval}: Consolidates data requests to minimize redundant calls to the hazard model.
+
+    \item \textbf{Scenario and Year Specific}: Calculates exposures for a specific climate scenario and year.
+\end{enumerate}
+
+\section{Usage Example}
+
+\begin{lstlisting}[language=Python]
+assets = [Asset(...), Asset(...), ...]  # List of assets
+hazard_model = SomeHazardModel(...)  # Your hazard model implementation
+exposure_measure = JupterExposureMeasure()
+scenario = "RCP8.5"
+year = 2050
+
+exposure_results = calculate_exposures(assets, hazard_model, exposure_measure, scenario, year)
+
+for asset, result in exposure_results.items():
+    print(f"Asset: {asset.id}")
+    for hazard_type, (category, value, path) in result.hazard_categories.items():
+        print(f"  {hazard_type.__name__}: {category.name} (value: {value}, source: {path})")
+\end{lstlisting}
+
+\section{Considerations and Potential Improvements}
+
+\begin{enumerate}
+    \item \textbf{Parallelization}: For large numbers of assets, consider implementing parallel processing.
+
+    \item \textbf{Error Handling}: Add more robust error handling, especially for cases where hazard data might be missing.
+
+    \item \textbf{Progress Reporting}: For long-running calculations, implement a progress reporting mechanism.
+
+    \item \textbf{Caching}: Consider caching hazard data responses to improve performance for repeated calculations.
+
+    \item \textbf{Flexibility}: Allow for calculating exposures for different scenarios or years in a single call.
+
+    \item \textbf{Validation}: Add input validation to ensure all required data is present and in the correct format.
+\end{enumerate}
+
+\end{document}

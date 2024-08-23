@@ -1,0 +1,170 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Curve Module Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This module provides utilities for working with exceedance curves and probability distributions. It includes functions for manipulating and processing bin edges and probabilities, as well as a class \texttt{ExceedanceCurve} for representing and working with exceedance curves.
+
+\section{Functions}
+
+\subsection{\texttt{add\_x\_value\_to\_curve(x, curve\_x, curve\_y)}}
+
+Adds an x value to a curve, interpolated from the existing curve.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{x}: The x value to add
+        \item \texttt{curve\_x}: The existing x values of the curve (sorted non-decreasing)
+        \item \texttt{curve\_y}: The existing y values of the curve
+    \end{itemize}
+    \item Returns: Updated \texttt{curve\_x} and \texttt{curve\_y}
+\end{itemize}
+
+\subsection{\texttt{to\_exceedance\_curve(bin\_edges, probs)}}
+
+Converts bin edges and probabilities to an exceedance curve.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{bin\_edges}: The edges of the bins
+        \item \texttt{probs}: The probabilities for each bin
+    \end{itemize}
+    \item Returns: An \texttt{ExceedanceCurve} object
+\end{itemize}
+
+\subsection{\texttt{process\_bin\_edges\_and\_probs(bin\_edges, probs, range\_fraction=0.05)}}
+
+Processes bin edges and probabilities to handle zero-width bins.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{bin\_edges}: The edges of the bins
+        \item \texttt{probs}: The probabilities for each bin
+        \item \texttt{range\_fraction}: Fraction of range to use for zero-width bins (default: 0.05)
+    \end{itemize}
+    \item Returns: Processed bin edges and probabilities
+\end{itemize}
+
+\subsection{\texttt{process\_bin\_edges\_for\_graph(bin\_edges, range\_fraction=0.05)}}
+
+Processes bin edges for graph display, handling zero-width bins.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{bin\_edges}: The edges of the bins
+        \item \texttt{range\_fraction}: Fraction of range to use for zero-width bins (default: 0.05)
+    \end{itemize}
+    \item Returns: Processed bin edges
+\end{itemize}
+
+\subsection{\texttt{\_\_next\_non\_equal\_index(ndarray, i)}}
+
+Helper function to find the next index in an array with a different value.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{ndarray}: The input array
+        \item \texttt{i}: The starting index
+    \end{itemize}
+    \item Returns: The next index with a different value
+\end{itemize}
+
+\section{Class: ExceedanceCurve}
+
+Represents an exceedance curve, where each point comprises a value \texttt{v} and a probability \texttt{p}. The probability \texttt{p} represents the chance that the random variable is greater than or equal to \texttt{v}.
+
+\subsection{Methods}
+
+\subsubsection{\texttt{\_\_init\_\_(self, probs, values)}}
+
+Initializes the ExceedanceCurve.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{probs}: Exceedance probabilities (must be sorted and decreasing)
+        \item \texttt{values}: Corresponding values (must be sorted and non-decreasing)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{\texttt{add\_value\_point(self, value)}}
+
+Adds a point to the curve with the specified value.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{value}: The value to add
+    \end{itemize}
+    \item Returns: A new ExceedanceCurve with the added point
+\end{itemize}
+
+\subsubsection{\texttt{get\_value(self, prob)}}
+
+Gets the value corresponding to a given probability.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{prob}: The probability
+    \end{itemize}
+    \item Returns: The corresponding value
+\end{itemize}
+
+\subsubsection{\texttt{get\_probability\_bins(self, include\_last=False)}}
+
+Converts from exceedance probability to bins of constant probability density.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{include\_last}: Whether to include the last bin (default: False)
+    \end{itemize}
+    \item Returns: Tuple of value bins and probabilities
+\end{itemize}
+
+\subsubsection{\texttt{get\_samples(self, uniforms)}}
+
+Returns values for given uniform random variables.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{uniforms}: Array of uniform random variables
+    \end{itemize}
+    \item Returns: Array of corresponding values
+\end{itemize}
+
+\section{Usage Notes}
+
+\begin{enumerate}
+    \item The \texttt{ExceedanceCurve} class is central to this module and provides various methods for working with exceedance curves.
+
+    \item The \texttt{add\_x\_value\_to\_curve} function is useful for aligning curves and bins, but care should be taken with multiple identical x values.
+
+    \item The \texttt{process\_bin\_edges\_and\_probs} and \texttt{process\_bin\_edges\_for\_graph} functions are helpful for handling zero-width bins, which can be problematic in certain analyses or visualizations.
+
+    \item When creating an \texttt{ExceedanceCurve}, ensure that the probabilities are sorted and decreasing, and the values are sorted and non-decreasing.
+
+    \item The \texttt{get\_samples} method of \texttt{ExceedanceCurve} can be used for Monte Carlo simulations or other sampling-based analyses.
+
+    \item This module relies heavily on numpy for efficient array operations. Users should be familiar with numpy array handling for optimal use.
+\end{enumerate}
+
+\end{document}

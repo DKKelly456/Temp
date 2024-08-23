@@ -1,0 +1,133 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Exposure Module Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This module provides functionality for calculating exposure measures for assets based on various hazard types. It includes classes for categorizing exposure levels, defining exposure measures, and calculating exposures for a list of assets.
+
+\section{Enums and Data Classes}
+
+\subsection{\texttt{Category} (Enum)}
+Represents different levels of exposure:
+\begin{itemize}
+    \item \texttt{LOWEST}, \texttt{LOW}, \texttt{MEDIUM}, \texttt{HIGH}, \texttt{HIGHEST}, \texttt{NODATA}
+\end{itemize}
+
+\subsection{\texttt{Bounds} (dataclass)}
+Defines the bounds for a category:
+\begin{itemize}
+    \item \texttt{category} (str): The category name
+    \item \texttt{lower} (float): Lower bound (inclusive)
+    \item \texttt{upper} (float): Upper bound (exclusive)
+\end{itemize}
+
+\subsection{\texttt{AssetExposureResult} (dataclass)}
+Stores the exposure results for an asset:
+\begin{itemize}
+    \item \texttt{hazard\_categories} (Dict[type, Tuple[Category, float, str]]): Maps hazard types to their category, value, and data path
+\end{itemize}
+
+\section{Abstract Base Classes}
+
+\subsection{\texttt{ExposureMeasure} (ABC)}
+Base class for exposure measures:
+\begin{itemize}
+    \item Abstract method: \texttt{get\_exposures(asset: Asset, data\_responses: Iterable[HazardDataResponse]) -> Dict[type, Tuple[Category, float, str]]}
+\end{itemize}
+
+\section{Classes}
+
+\subsection{\texttt{JupterExposureMeasure} (ExposureMeasure)}
+Implements exposure measures based on Jupiter data:
+
+Methods:
+\begin{itemize}
+    \item \texttt{\_\_init\_\_()}: Initializes the exposure bins
+    \item \texttt{get\_data\_requests(asset: Asset, *, scenario: str, year: int) -> Iterable[HazardDataRequest]}: Returns data requests for the asset
+    \item \texttt{get\_exposures(asset: Asset, data\_responses: Iterable[HazardDataResponse]) -> Dict[type, Tuple[Category, float, str]]}: Calculates exposures for the asset
+    \item \texttt{get\_exposure\_bins() -> Dict}: Defines exposure bins for various hazard types
+    \item \texttt{bounds\_to\_lookup(bounds: Iterable[Bounds]) -> Tuple[np.ndarray, np.ndarray]}: Converts bounds to lookup arrays
+\end{itemize}
+
+\section{Functions}
+
+\subsection{\texttt{calculate\_exposures(assets: List[Asset], hazard\_model: HazardModel, exposure\_measure: ExposureMeasure, scenario: str, year: int) -> Dict[Asset, AssetExposureResult]}}
+Calculates exposures for a list of assets:
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{assets}: List of assets to calculate exposures for
+        \item \texttt{hazard\_model}: Model providing hazard data
+        \item \texttt{exposure\_measure}: Measure to use for exposure calculation
+        \item \texttt{scenario}: Climate scenario
+        \item \texttt{year}: Year for which to calculate exposures
+    \end{itemize}
+    \item Returns: Dictionary mapping assets to their exposure results
+\end{itemize}
+
+\section{Key Concepts}
+
+\begin{enumerate}
+    \item \textbf{Exposure Categories}: Exposures are categorized into levels (LOWEST to HIGHEST) based on predefined thresholds for each hazard type.
+
+    \item \textbf{Hazard Types}: The module considers various hazard types including CombinedInundation, ChronicHeat, Wind, Drought, Hail, and Fire.
+
+    \item \textbf{Data Requests}: The \texttt{JupterExposureMeasure} class generates data requests for each asset and hazard type.
+
+    \item \textbf{Exposure Calculation}: Exposures are calculated by comparing hazard data to predefined thresholds and assigning appropriate categories.
+\end{enumerate}
+
+\section{Usage Notes}
+
+\begin{enumerate}
+    \item The \texttt{JupterExposureMeasure} class is designed to work with specific hazard data sources and indicators. Ensure that the hazard model can provide the required data.
+
+    \item When using \texttt{calculate\_exposures}, make sure that the \texttt{hazard\_model} is compatible with the data requests generated by the \texttt{exposure\_measure}.
+
+    \item The exposure bins in \texttt{JupterExposureMeasure} are hardcoded. Consider making these configurable if flexibility is needed.
+
+    \item The module uses numpy for efficient array operations, particularly in the \texttt{bounds\_to\_lookup} method.
+
+    \item Error handling is minimal. Consider adding more robust error checking and handling, especially for edge cases in data responses.
+
+    \item The module is designed to be extensible. New exposure measures can be implemented by subclassing \texttt{ExposureMeasure}.
+\end{enumerate}
+
+\end{document}

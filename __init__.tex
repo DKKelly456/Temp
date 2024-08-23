@@ -1,0 +1,307 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}[{\titlerule[0.8pt]}]
+
+\title{Risk Assessment System Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{\_\_init\_\_ Documentation}
+
+\subsection{Overview}
+
+This \texttt{\_\_init\_\_.py} file defines the public interface for a Python package related to risk assessment and hazard modeling. It imports and exposes various classes from different modules within the package.
+
+\subsection{Imported Classes}
+
+\subsubsection{From \texttt{.assets} module:}
+\begin{enumerate}
+    \item \texttt{Asset}: Likely represents a general asset in the risk assessment context.
+    \item \texttt{PowerGeneratingAsset}: A specialized asset class, probably representing power plants or similar facilities.
+\end{enumerate}
+
+\subsubsection{From \texttt{.curve} module:}
+\begin{enumerate}\setcounter{enumi}{2}
+    \item \texttt{ExceedanceCurve}: Likely used for probability calculations in risk assessment.
+\end{enumerate}
+
+\subsubsection{From \texttt{.hazard\_event\_distrib} module:}
+\begin{enumerate}\setcounter{enumi}{3}
+    \item \texttt{HazardEventDistrib}: Probably represents the distribution of hazard events.
+\end{enumerate}
+
+\subsubsection{From \texttt{.hazards} module:}
+\begin{enumerate}\setcounter{enumi}{4}
+    \item \texttt{Hazard}: A base class for different types of hazards.
+    \item \texttt{Drought}: A specific type of hazard representing drought conditions.
+    \item \texttt{RiverineInundation}: Another specific hazard type, likely representing flooding from rivers.
+\end{enumerate}
+
+\subsubsection{From \texttt{.vulnerability\_distrib} module:}
+\begin{enumerate}\setcounter{enumi}{7}
+    \item \texttt{VulnerabilityDistrib}: Likely represents the distribution of vulnerability for assets.
+\end{enumerate}
+
+\subsubsection{From \texttt{.vulnerability\_model} module:}
+\begin{enumerate}\setcounter{enumi}{8}
+    \item \texttt{VulnerabilityModelAcuteBase}: Probably a base class for acute vulnerability models.
+\end{enumerate}
+
+\subsection{Usage}
+
+When users import this package, they will have direct access to all these classes. For example:
+
+\begin{lstlisting}[language=Python]
+from your_package_name import Asset, PowerGeneratingAsset, ExceedanceCurve, Hazard, Drought
+
+# Now you can use these classes directly
+asset = Asset()
+power_plant = PowerGeneratingAsset()
+drought_hazard = Drought()
+\end{lstlisting}
+
+\subsection{Package Structure}
+
+This \texttt{\_\_init\_\_.py} file suggests that the package has at least the following structure:
+
+\begin{verbatim}
+your_package_name/
+|-- __init__.py
+|-- assets.py
+|-- curve.py
+|-- hazard_event_distrib.py
+|-- hazards.py
+|-- vulnerability_distrib.py
+`-- vulnerability_model.py
+\end{verbatim}
+
+Each of these \texttt{.py} files contains the respective classes that are being imported in the \texttt{\_\_init\_\_.py} file.
+
+\subsection{Notes for Developers}
+
+\begin{itemize}
+    \item When adding new modules or classes to the package, remember to update this \texttt{\_\_init\_\_.py} file to expose them at the package level if needed.
+    \item Be cautious about circular imports. The current structure seems to avoid this, but it's something to keep in mind as the package grows.
+    \item Consider adding type hints and docstrings to these classes in their respective modules to improve IDE support and documentation.
+\end{itemize}
+
+\newpage
+\section{Assets Module Documentation}
+
+\subsection{Overview}
+
+This module defines various asset classes used in a risk assessment or asset management system, with a particular focus on power generating assets. It includes enumerations for fuel types, cooling systems, and turbine types, as well as classes for different types of assets.
+
+\subsection{Enumerations}
+
+\subsubsection{\texttt{FuelKind} (Enum)}
+Represents different types of fuel used in power plants, based on the Global Power Plant Database v1.3.0.
+
+Values include: Biomass, Coal, Cogeneration, Gas, Geothermal, Hydro, Nuclear, Oil, Other, Petcoke, Solar, Storage, Waste, WaveAndTidal, Wind
+
+\subsubsection{\texttt{CoolingKind} (Enum)}
+Represents different cooling systems used in power plants.
+
+Values:
+\begin{itemize}
+    \item \texttt{Dry}: Affected by Air Temperature, Inundation
+    \item \texttt{OnceThrough}: Affected by Drought, Inundation, Water Temperature, Water Stress
+    \item \texttt{Recirculating}: Affected by Drought, Inundation, Water Temperature, Water Stress, Wet-Bulb Temperature
+\end{itemize}
+
+\subsubsection{\texttt{TurbineKind} (Enum)}
+Represents types of turbines used in power plants.
+
+Values: Gas, Steam
+
+\subsection{Classes}
+
+\subsubsection{\texttt{Asset}}
+Base class for all assets.
+
+Attributes:
+\begin{itemize}
+    \item \texttt{latitude} (float): Geographical latitude of the asset
+    \item \texttt{longitude} (float): Geographical longitude of the asset
+    \item \texttt{id} (Optional[str]): Unique identifier for the asset
+\end{itemize}
+
+\subsubsection{\texttt{WindTurbine} (dataclass)}
+Represents a wind turbine, inheriting from \texttt{Asset}.
+
+Additional attributes:
+\begin{itemize}
+    \item \texttt{capacity} (Optional[float]): Power generation capacity
+    \item \texttt{hub\_height} (Optional[float]): Height of the turbine hub
+    \item \texttt{cut\_in\_speed} (Optional[float]): Minimum wind speed for operation
+    \item \texttt{cut\_out\_speed} (Optional[float]): Maximum wind speed for operation
+    \item \texttt{fixed\_base} (Optional[bool]): Whether the turbine has a fixed base (default: True)
+    \item \texttt{rotor\_diameter} (Optional[float]): Diameter of the rotor
+\end{itemize}
+
+\subsubsection{\texttt{PowerGeneratingAsset}}
+Represents a generic power generating asset, inheriting from \texttt{Asset}.
+
+Additional attributes:
+\begin{itemize}
+    \item \texttt{type} (Optional[str]): Type of the power generating asset
+    \item \texttt{location} (Optional[str]): Location of the asset
+    \item \texttt{capacity} (Optional[float]): Power generation capacity
+    \item \texttt{primary\_fuel} (Optional[FuelKind]): Primary fuel used by the asset
+\end{itemize}
+
+\subsubsection{\texttt{ThermalPowerGeneratingAsset}}
+Represents a thermal power generating asset, inheriting from \texttt{PowerGeneratingAsset}.
+
+Additional attributes:
+\begin{itemize}
+    \item \texttt{turbine} (Optional[TurbineKind]): Type of turbine used
+    \item \texttt{cooling} (Optional[CoolingKind]): Type of cooling system used
+\end{itemize}
+
+Methods:
+\begin{itemize}
+    \item \texttt{get\_inundation\_protection\_return\_period()}: Returns the design return period for inundation protection (250 years for most plants, 10,000 years for nuclear plants)
+\end{itemize}
+
+\subsubsection{\texttt{RealEstateAsset}}
+Represents a real estate asset, inheriting from \texttt{Asset}.
+
+Additional attributes:
+\begin{itemize}
+    \item \texttt{location} (str): Location of the real estate
+    \item \texttt{type} (str): Type of real estate
+\end{itemize}
+
+\subsubsection{\texttt{ManufacturingAsset}}
+Represents a manufacturing asset, inheriting from \texttt{Asset}.
+
+Additional attributes:
+\begin{itemize}
+    \item \texttt{location} (Optional[str]): Location of the manufacturing asset
+    \item \texttt{type} (Optional[str]): Type of manufacturing asset
+\end{itemize}
+
+\subsubsection{\texttt{IndustrialActivity}}
+Represents an industrial activity, inheriting from \texttt{Asset}.
+
+Additional attributes:
+\begin{itemize}
+    \item \texttt{location} (Optional[str]): Location of the industrial activity
+    \item \texttt{type} (str): Type of industrial activity
+\end{itemize}
+
+\subsubsection{\texttt{TestAsset}}
+A simple test asset class, inheriting from \texttt{Asset} with no additional attributes or methods.
+
+\subsection{Usage Notes}
+
+\begin{enumerate}
+    \item The \texttt{Asset} class serves as the base for all other asset types, providing common attributes like latitude, longitude, and ID.
+    
+    \item The \texttt{PowerGeneratingAsset} class uses a type string to determine the primary fuel. The type string can contain multiple archetypes separated by "/".
+    
+    \item The \texttt{ThermalPowerGeneratingAsset} class extends this concept, using additional archetypes in the type string to determine turbine and cooling types.
+    
+    \item The \texttt{get\_inundation\_protection\_return\_period()} method in \texttt{ThermalPowerGeneratingAsset} provides different protection levels for nuclear vs. non-nuclear plants.
+    
+    \item Various asset types (RealEstate, Manufacturing, IndustrialActivity) are provided for different use cases in the risk assessment or asset management system.
+    
+    \item The \texttt{TestAsset} class can be used for testing purposes or as a placeholder for future asset types.
+\end{enumerate}
+
+\newpage
+\section{Calculation Module Documentation}
+
+\subsection{Overview}
+
+This module serves as a configuration hub for the physical risk assessment system. It defines default hazard models, vulnerability models, and risk measure calculators for various asset types. The module also includes a factory class for creating risk measure calculators based on specific use cases.
+
+\subsection{Imports}
+
+The module imports various components from the \texttt{physrisk} package, including hazard models, vulnerability models, and risk calculators. It also imports asset types from a local \texttt{.assets} module.
+
+\subsection{Functions}
+
+\subsubsection{\texttt{get\_default\_hazard\_model() -> HazardModel}}
+
+Returns the default hazard model, which is a \texttt{ZarrHazardModel} that retrieves hazard event data from Zarr storage.
+
+\subsubsection{\texttt{get\_default\_vulnerability\_models() -> Dict[type, Sequence[VulnerabilityModelBase]]}}
+
+Returns a dictionary mapping asset types to sequences of vulnerability models. This function defines the default vulnerability models for different asset types:
+
+\begin{itemize}
+    \item \texttt{Asset}: Generic asset models (placeholder for unknown assets)
+    \item \texttt{PowerGeneratingAsset}: Inundation model
+    \item \texttt{RealEstateAsset}: Models for coastal and riverine inundation, tropical cyclones, and cooling
+    \item \texttt{IndustrialActivity}: Chronic heat model
+    \item \texttt{ThermalPowerGeneratingAsset}: Models for various thermal power plant vulnerabilities
+    \item \texttt{TestAsset}: Temperature model
+\end{itemize}
+
+\subsubsection{\texttt{get\_default\_risk\_measure\_calculators() -> Dict[Type[Asset], RiskMeasureCalculator]}}
+
+Returns a dictionary mapping asset types to risk measure calculators. Currently, it only defines a calculator for \texttt{RealEstateAsset}.
+
+\subsection{Classes}
+
+\subsubsection{\texttt{DefaultMeasuresFactory(RiskMeasuresFactory)}}
+
+A factory class for creating risk measure calculators based on specific use cases.
+
+Methods:
+\begin{itemize}
+    \item \texttt{calculators(self, use\_case\_id: str) -> Dict[Type[Asset], RiskMeasureCalculator]}:
+    \begin{itemize}
+        \item If \texttt{use\_case\_id} is "generic", returns a dictionary with a \texttt{GenericScoreBasedRiskMeasures} calculator for the \texttt{Asset} type.
+        \item Otherwise, returns the result of \texttt{get\_default\_risk\_measure\_calculators()}.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Key Components}
+
+\begin{enumerate}
+    \item \textbf{Hazard Model}: The default hazard model uses Zarr storage for retrieving hazard event data.
+
+    \item \textbf{Vulnerability Models}: 
+    \begin{itemize}
+        \item For generic assets, placeholder models are used for various hazards (fire, chronic heat, hail, drought, precipitation).
+        \item Specific models are defined for power generating assets, real estate assets, industrial activities, and thermal power generating assets.
+        \item These models cover a range of hazards including inundation, tropical cyclones, chronic heat, and various thermal power plant-specific vulnerabilities.
+    \end{itemize}
+
+    \item \textbf{Risk Measure Calculators}: 
+    \begin{itemize}
+        \item The default setup includes a specific calculator for real estate assets (\texttt{RealEstateToyRiskMeasures}).
+        \item The \texttt{DefaultMeasuresFactory} allows for dynamic selection of risk measure calculators based on the use case.
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Usage Notes}
+
+\begin{enumerate}
+    \item This module serves as a central configuration point for the physical risk assessment system. Users can modify these functions to customize the models and calculators used in their assessments.
+
+    \item The \texttt{get\_default\_vulnerability\_models()} function allows for easy extension to support new asset types or vulnerability models.
+
+    \item The \texttt{DefaultMeasuresFactory} class provides a flexible way to select risk measure calculators based on different use cases. Users can extend this class to support additional use cases.
+
+    \item When adding new asset types or models, ensure they are imported correctly and added to the appropriate dictionaries in this module.
+
+    \item The use of placeholder vulnerability models (e.g., \texttt{PlaceholderVulnerabilityModel}) suggests that some parts of the system may still be under development or pending more specific implementations.
+\end{enumerate}
+
+\end{document}

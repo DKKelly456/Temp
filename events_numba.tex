@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Events Numba Overview}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{What is Numba?}
+
+Numba is an open-source JIT compiler that translates a subset of Python and NumPy code into fast machine code. It's particularly useful for numerical and array-oriented computing.
+
+\section{Key Features}
+
+\begin{enumerate}
+    \item \textbf{JIT Compilation}: Numba compiles Python functions to optimized machine code at runtime.
+
+    \item \textbf{NumPy Integration}: Works seamlessly with NumPy arrays and functions.
+
+    \item \textbf{GPU Acceleration}: Can target NVIDIA CUDA GPUs for parallel computing.
+
+    \item \textbf{Automatic Optimization}: Applies various optimizations without requiring changes to your Python code.
+\end{enumerate}
+
+\section{How Numba is Used in the \texttt{events.py} File}
+
+In the \texttt{events.py} file, Numba is used in several ways:
+
+\begin{enumerate}
+    \item \textbf{@njit Decorator}: 
+    \begin{lstlisting}[language=Python]
+@njit(cache=True)
+def sample_from_cumulative_probs(values, cum_probs, uniforms):
+    \end{lstlisting}
+    This decorator compiles the function to machine code. The \texttt{cache=True} argument allows Numba to cache the compiled function for faster subsequent calls.
+
+    \item \textbf{@jitclass Decorator}:
+    \begin{lstlisting}[language=Python]
+@jitclass(spec)
+class CumulativeProb(object):
+    \end{lstlisting}
+    This decorator is used to compile a Python class, allowing for fast operations on its methods and attributes.
+
+    \item \textbf{Performance Benefits}: By using Numba, computationally intensive functions like \texttt{sample\_from\_cumulative\_probs} and \texttt{event\_samples\_numba} can run much faster than standard Python code, especially when dealing with large arrays.
+\end{enumerate}
+
+\section{Advantages of Using Numba}
+
+\begin{enumerate}
+    \item \textbf{Speed}: Can significantly speed up numerical computations.
+    \item \textbf{Ease of Use}: Requires minimal changes to existing Python code.
+    \item \textbf{NumPy Compatibility}: Works well with existing NumPy code.
+    \item \textbf{Selective Optimization}: Can be applied to specific functions that need performance boosts.
+\end{enumerate}
+
+\section{Considerations}
+
+\begin{enumerate}
+    \item \textbf{First-Run Overhead}: There's a compilation overhead on the first run of a Numba-optimized function.
+    \item \textbf{Limited Python Subset}: Not all Python features are supported by Numba.
+    \item \textbf{Debugging}: Can make debugging more challenging as the code is compiled.
+\end{enumerate}
+
+\end{document}

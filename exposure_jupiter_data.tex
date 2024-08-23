@@ -1,0 +1,116 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Jupiter Data in JupterExposureMeasure}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+The "Jupiter" in \texttt{JupterExposureMeasure} likely refers to Jupiter Intelligence, a company that provides climate risk analytics. While the code doesn't explicitly define Jupiter data, we can infer its nature from the class implementation.
+
+\section{Characteristics of Jupiter Data}
+
+Based on the \texttt{JupterExposureMeasure} implementation, we can infer the following about Jupiter data:
+
+\begin{enumerate}
+    \item \textbf{Hazard Types}: Jupiter data covers multiple hazard types, including:
+    \begin{itemize}
+        \item Combined Inundation
+        \item Chronic Heat
+        \item Wind
+        \item Drought
+        \item Hail
+        \item Fire
+    \end{itemize}
+
+    \item \textbf{Data Format}: The data appears to be provided as either single parameters or event distributions, as evidenced by the handling of both \texttt{HazardParameterDataResponse} and \texttt{HazardEventDataResponse} in the \texttt{get\_exposures} method.
+
+    \item \textbf{Specific Indicators}: Each hazard type has a specific indicator:
+    \begin{itemize}
+        \item Combined Inundation: "flooded\_fraction"
+        \item Chronic Heat: "days/above/35c"
+        \item Wind: "max\_speed"
+        \item Drought: "months/spei3m/below/-2"
+        \item Hail: "days/above/5cm"
+        \item Fire: "fire\_probability"
+    \end{itemize}
+
+    \item \textbf{Categorization}: The data allows for categorization into five levels of exposure (LOWEST, LOW, MEDIUM, HIGH, HIGHEST) based on predefined thresholds.
+
+    \item \textbf{Spatial Data}: The data is likely geospatial, as it's requested for specific latitude and longitude coordinates (inferred from the \texttt{Asset} parameter in \texttt{get\_data\_requests}).
+
+    \item \textbf{Temporal Aspects}: The data is scenario and year-specific, allowing for analysis of future climate conditions under different scenarios.
+
+    \item \textbf{Wind Data Specificity}: There's a special case for wind data, using a specific model:
+    \begin{lstlisting}[language=Python]
+hint=HazardDataHint(path="wind/jupiter/v1/max_1min_{scenario}_{year}")
+    \end{lstlisting}
+    This suggests that Jupiter provides detailed wind data, possibly at 1-minute resolution.
+\end{enumerate}
+
+\section{Potential Nature of Jupiter Data}
+
+Given these characteristics, Jupiter data likely consists of:
+
+\begin{enumerate}
+    \item \textbf{Climate Model Outputs}: Processed results from climate models, focusing on specific hazards.
+    \item \textbf{Historical Data}: Possibly combined with historical observations for calibration.
+    \item \textbf{Probabilistic Projections}: Especially for event-based data, providing probability distributions of hazard intensities.
+    \item \textbf{High-Resolution Grids}: Geospatial data at a resolution fine enough for asset-level analysis.
+    \item \textbf{Multiple Scenarios}: Data for different climate change scenarios (e.g., RCP 8.5).
+    \item \textbf{Temporal Projections}: Projections for various future time periods.
+\end{enumerate}
+
+\section{Usage in JupterExposureMeasure}
+
+The \texttt{JupterExposureMeasure} class uses this data to:
+
+\begin{enumerate}
+    \item Request specific hazard information for given assets, scenarios, and years.
+    \item Interpret the received data values.
+    \item Categorize the exposure levels based on predefined thresholds.
+    \item Provide a standardized exposure assessment across different hazard types.
+\end{enumerate}
+
+\section{Considerations}
+
+\begin{enumerate}
+    \item \textbf{Data Access}: The actual data retrieval is abstracted through the \texttt{HazardModel}, suggesting a modular approach to data sourcing.
+    \item \textbf{Customization}: The predefined categories and thresholds in \texttt{JupterExposureMeasure} are tailored to Jupiter's data ranges and meanings.
+    \item \textbf{Proprietary Nature}: As a commercial product, the exact methodologies and data processing techniques used by Jupiter may not be fully disclosed in the code.
+\end{enumerate}
+
+\end{document}

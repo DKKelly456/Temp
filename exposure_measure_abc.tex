@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{ExposureMeasure (ABC) Detailed Explanation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+\texttt{ExposureMeasure} is an abstract base class (ABC) that defines the interface for exposure measure implementations. It serves as a blueprint for creating different types of exposure measures in the system.
+
+\section{Class Definition}
+
+\begin{lstlisting}[language=Python]
+class ExposureMeasure(DataRequester):
+    @abstractmethod
+    def get_exposures(
+        self, asset: Asset, data_responses: Iterable[HazardDataResponse]
+    ) -> Dict[type, Tuple[Category, float, str]]: ...
+\end{lstlisting}
+
+\section{Key Aspects}
+
+\begin{enumerate}
+    \item \textbf{Inheritance from DataRequester}: 
+    \texttt{ExposureMeasure} inherits from \texttt{DataRequester}, which likely defines methods for requesting data. This suggests that exposure measures are responsible for specifying what data they need.
+
+    \item \textbf{Abstract Method}:
+    The class defines one abstract method, \texttt{get\_exposures}, which must be implemented by any concrete subclass.
+
+    \item \textbf{Method Signature}:
+    \begin{itemize}
+        \item \texttt{asset: Asset}: The asset for which exposure is being calculated.
+        \item \texttt{data\_responses: Iterable[HazardDataResponse]}: Responses from hazard data requests.
+        \item Returns \texttt{Dict[type, Tuple[Category, float, str]]}: A mapping of hazard types to exposure results.
+    \end{itemize}
+
+    \item \textbf{Return Value Structure}:
+    \begin{itemize}
+        \item \texttt{type}: Likely represents the hazard type (e.g., Flood, Fire).
+        \item \texttt{Category}: An enum representing the exposure category (e.g., LOW, MEDIUM, HIGH).
+        \item \texttt{float}: The numerical value of the exposure.
+        \item \texttt{str}: Probably a path or identifier for the data source.
+    \end{itemize}
+\end{enumerate}
+
+\section{Purpose and Design Philosophy}
+
+\begin{enumerate}
+    \item \textbf{Separation of Concerns}: 
+    By defining an abstract base class, the module separates the interface of exposure measures from their implementations. This allows for different exposure calculation methodologies without changing the overall system structure.
+
+    \item \textbf{Polymorphism}: 
+    The abstract class enables polymorphic use of different exposure measures. Functions like \texttt{calculate\_exposures} can work with any concrete implementation of \texttt{ExposureMeasure}.
+
+    \item \textbf{Extensibility}: 
+    New exposure measures can be easily added by creating new classes that inherit from \texttt{ExposureMeasure} and implement the \texttt{get\_exposures} method.
+
+    \item \textbf{Standardization}: 
+    The ABC ensures that all exposure measures have a consistent interface, making the system more maintainable and easier to understand.
+\end{enumerate}
+
+\section{Usage and Implementation}
+
+To create a new exposure measure:
+
+\begin{enumerate}
+    \item Create a new class that inherits from \texttt{ExposureMeasure}.
+    \item Implement the \texttt{get\_exposures} method, ensuring it adheres to the defined signature.
+    \item Optionally, implement any methods from \texttt{DataRequester} if needed.
+\end{enumerate}
+
+Example skeleton:
+
+\begin{lstlisting}[language=Python]
+class NewExposureMeasure(ExposureMeasure):
+    def get_exposures(self, asset: Asset, data_responses: Iterable[HazardDataResponse]) -> Dict[type, Tuple[Category, float, str]]:
+        # Implementation here
+        pass
+
+    # Optionally implement DataRequester methods
+    def get_data_requests(self, asset: Asset, *, scenario: str, year: int) -> Iterable[HazardDataRequest]:
+        # Implementation here
+        pass
+\end{lstlisting}
+
+\section{Considerations for Implementers}
+
+\begin{enumerate}
+    \item \textbf{Data Handling}: Implementations need to handle various types of \texttt{HazardDataResponse} objects correctly.
+    \item \textbf{Categorization Logic}: Define clear logic for categorizing exposure levels based on the data.
+    \item \textbf{Error Handling}: Consider how to handle missing or invalid data in the responses.
+    \item \textbf{Performance}: For large-scale applications, consider the efficiency of the implementation, especially if processing many assets.
+\end{enumerate}
+
+\end{document}

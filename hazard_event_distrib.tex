@@ -1,0 +1,179 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{HazardEventDistrib Class Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+The \texttt{HazardEventDistrib} class represents the intensity distribution of a hazard event (such as inundation depth or wind speed) specific to the location of an asset. It provides methods to manage and analyze the probability distribution of hazard intensities.
+
+\section{Class Definition}
+
+\begin{lstlisting}[language=Python]
+class HazardEventDistrib:
+    __slots__ = ["__event_type", "__intensity_bins", "__prob", "__path", "__exceedance"]
+\end{lstlisting}
+
+The use of \texttt{\_\_slots\_\_} optimizes memory usage and provides faster attribute access.
+
+\section{Constructor}
+
+\begin{lstlisting}[language=Python]
+def __init__(
+    self,
+    event_type: type,
+    intensity_bins: Union[List[float], np.ndarray],
+    prob: Union[List[float], np.ndarray],
+    path: List[str]
+):
+\end{lstlisting}
+
+\subsection{Parameters:}
+
+\begin{itemize}
+    \item \texttt{event\_type} (type): The type of hazard event.
+    \item \texttt{intensity\_bins} (Union[List[float], np.ndarray]): Non-decreasing intensity bin edges.
+    \item \texttt{prob} (Union[List[float], np.ndarray]): Annual probability of occurrence for each intensity bin.
+    \item \texttt{path} (List[str]): Path to the hazard indicator data source.
+\end{itemize}
+
+\subsection{Behavior:}
+
+\begin{itemize}
+    \item Initializes the class attributes with the provided values.
+    \item Converts \texttt{intensity\_bins} and \texttt{prob} to numpy arrays for efficient computation.
+\end{itemize}
+
+\section{Properties}
+
+\subsection{\texttt{intensity\_bin\_edges}}
+
+\begin{lstlisting}[language=Python]
+@property
+def intensity_bin_edges(self) -> np.ndarray:
+\end{lstlisting}
+
+Returns the array of intensity bin edges.
+
+\subsection{\texttt{prob}}
+
+\begin{lstlisting}[language=Python]
+@property
+def prob(self) -> np.ndarray:
+\end{lstlisting}
+
+Returns the array of probabilities for each intensity bin.
+
+\subsection{\texttt{path}}
+
+\begin{lstlisting}[language=Python]
+@property
+def path(self) -> List[str]:
+\end{lstlisting}
+
+Returns the path to the hazard indicator data source.
+
+\section{Methods}
+
+\subsection{\texttt{intensity\_bins()}}
+
+\begin{lstlisting}[language=Python]
+def intensity_bins(self):
+\end{lstlisting}
+
+Returns a generator of tuples representing the lower and upper bounds of each intensity bin.
+
+\subsection{\texttt{to\_exceedance\_curve()}}
+
+\begin{lstlisting}[language=Python]
+def to_exceedance_curve(self):
+\end{lstlisting}
+
+Converts the probability distribution to an exceedance curve using the \texttt{curve.to\_exceedance\_curve()} function.
+
+\section{Usage Example}
+
+\begin{lstlisting}[language=Python]
+# Create a HazardEventDistrib instance
+hazard_dist = HazardEventDistrib(
+    event_type=WindEvent,
+    intensity_bins=[0, 10, 20, 30, 40],
+    prob=[0.5, 0.3, 0.15, 0.05],
+    path=["wind_data", "location_123"]
+)
+
+# Access properties
+print(hazard_dist.intensity_bin_edges)  # [0, 10, 20, 30, 40]
+print(hazard_dist.prob)  # [0.5, 0.3, 0.15, 0.05]
+
+# Iterate over intensity bins
+for lower, upper in hazard_dist.intensity_bins():
+    print(f"Bin: {lower} to {upper}")
+
+# Convert to exceedance curve
+exceedance_curve = hazard_dist.to_exceedance_curve()
+\end{lstlisting}
+
+\section{Notes}
+
+\begin{enumerate}
+    \item The class uses double underscore name mangling for its attributes, indicating that they are intended to be private.
+
+    \item The \texttt{intensity\_bins} method returns a generator, which is memory-efficient for large datasets.
+
+    \item The \texttt{to\_exceedance\_curve()} method relies on an external \texttt{curve} module, which should be imported and available.
+
+    \item The class is designed to work with numpy arrays for efficient numerical operations.
+
+    \item The use of \texttt{Union[List[float], np.ndarray]} in the constructor allows for flexibility in input types.
+\end{enumerate}
+
+\section{Potential Improvements}
+
+\begin{enumerate}
+    \item Add input validation in the constructor to ensure \texttt{intensity\_bins} and \texttt{prob} have compatible shapes.
+
+    \item Implement additional methods for statistical analysis of the hazard distribution.
+
+    \item Add documentation strings (docstrings) to methods for better inline documentation.
+
+    \item Consider adding a method to visualize the probability distribution or exceedance curve.
+
+    \item Implement serialization methods if persistence of these objects is required.
+\end{enumerate}
+
+\end{document}

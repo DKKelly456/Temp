@@ -1,0 +1,155 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Events Module Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+This module provides utilities for working with multivariate probability distributions, cumulative probabilities, and event sampling. It includes functions optimized with Numba for performance, as well as classes for representing and manipulating probability distributions.
+
+\section{Functions}
+
+\subsection{\texttt{calculate\_cumulative\_probs(bins\_lower, bins\_upper, probs)}}
+
+Calculates cumulative probabilities from bin edges and probabilities.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{bins\_lower} (np.ndarray): Lower bounds of probability bins
+        \item \texttt{bins\_upper} (np.ndarray): Upper bounds of probability bins
+        \item \texttt{probs} (np.ndarray): Probabilities for each bin
+    \end{itemize}
+    \item Returns: Tuple of values and cumulative probabilities
+\end{itemize}
+
+\subsection{\texttt{sample\_from\_cumulative\_probs(values, cum\_probs, uniforms)}}
+
+Samples from cumulative probabilities using uniform random variables.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{values} (np.ndarray): Values corresponding to cumulative probabilities
+        \item \texttt{cum\_probs} (np.ndarray): Cumulative probabilities
+        \item \texttt{uniforms} (np.ndarray): Uniform random variables for sampling
+    \end{itemize}
+    \item Returns: Sampled values
+\end{itemize}
+
+\subsection{\texttt{event\_samples(impacts\_bins, probs, nb\_events, nb\_samples)}}
+
+Generates event samples based on impact bins and probabilities.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{impacts\_bins} (np.ndarray): Bin edges for impact values
+        \item \texttt{probs} (List[np.ndarray]): List of probability arrays
+        \item \texttt{nb\_events} (int): Number of events
+        \item \texttt{nb\_samples} (int): Number of samples to generate
+    \end{itemize}
+    \item Returns: Array of sampled event impacts
+\end{itemize}
+
+\subsection{\texttt{find(elements, value)}}
+
+Performs a binary search to find a value in a sorted array.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{elements} (np.ndarray): Sorted array to search
+        \item \texttt{value}: Value to find
+    \end{itemize}
+    \item Returns: Index of the found value or closest lower value
+\end{itemize}
+
+\section{Classes}
+
+\subsection{\texttt{MultivariateDistribution} (Protocol)}
+
+A protocol class defining the interface for multivariate distributions.
+
+Methods:
+\begin{itemize}
+    \item \texttt{inv\_cumulative\_marginal\_probs(cum\_probs: np.ndarray)}
+\end{itemize}
+
+\subsection{\texttt{EmpiricalMultivariateDistribution}}
+
+Represents an N-dimensional empirical probability density function.
+
+\subsubsection{Methods:}
+
+\begin{itemize}
+    \item \texttt{\_\_init\_\_(bins\_lower, bins\_upper, probs)}
+    \begin{itemize}
+        \item Initializes the distribution with bin edges and probabilities
+    \end{itemize}
+    \item \texttt{inv\_cumulative\_marginal\_probs(cum\_probs)}
+    \begin{itemize}
+        \item Calculates inverse cumulative probabilities for marginal distributions
+    \end{itemize}
+\end{itemize}
+
+\subsection{\texttt{CumulativeProb}}
+
+A Numba-optimized class for representing cumulative probabilities.
+
+\subsubsection{Attributes:}
+\begin{itemize}
+    \item \texttt{values} (np.ndarray): Values corresponding to cumulative probabilities
+    \item \texttt{cum\_probs} (np.ndarray): Cumulative probabilities
+\end{itemize}
+
+\subsubsection{Methods:}
+\begin{itemize}
+    \item \texttt{\_\_init\_\_(values, cum\_probs)}
+    \begin{itemize}
+        \item Initializes the CumulativeProb object
+    \end{itemize}
+    \item \texttt{size} (property)
+    \begin{itemize}
+        \item Returns the size of the cumulative probability array
+    \end{itemize}
+\end{itemize}
+
+\section{Numba Optimizations}
+
+Several functions and the \texttt{CumulativeProb} class are optimized using Numba:
+
+\begin{itemize}
+    \item \texttt{sample\_from\_cumulative\_probs} is optimized with \texttt{@njit(cache=True)}
+    \item \texttt{event\_samples\_numba} is optimized with \texttt{@njit(cache=True)}
+    \item \texttt{CumulativeProb} is optimized with \texttt{@jitclass}
+\end{itemize}
+
+Numba is being used to optimize performance-critical functions that involve numerical computations and array manipulations. This is particularly important in the field of risk assessment and probability modeling, where you might need to perform many calculations or simulations quickly.
+
+\section{Usage Notes}
+
+\begin{enumerate}
+    \item The \texttt{EmpiricalMultivariateDistribution} class is useful for representing complex, multi-dimensional probability distributions based on empirical data.
+
+    \item The \texttt{event\_samples} function can be used to generate Monte Carlo samples for event-based simulations or risk assessments.
+
+    \item The Numba-optimized functions and classes provide high-performance operations for large-scale probability computations and sampling.
+
+    \item When working with \texttt{EmpiricalMultivariateDistribution}, ensure that the input bin edges and probabilities are correctly formatted and satisfy the required conditions (e.g., non-decreasing, non-overlapping bins).
+
+    \item The \texttt{find} function provides a custom binary search implementation, which might be useful in specific scenarios where numpy's built-in search functions are not suitable.
+
+    \item When using the Numba-optimized functions, be aware of the compilation overhead on the first run, which is amortized in subsequent calls.
+\end{enumerate}
+
+\end{document}

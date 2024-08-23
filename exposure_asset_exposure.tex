@@ -1,0 +1,128 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{AssetExposureResult Detailed Explanation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Class Definition}
+
+\begin{lstlisting}[language=Python]
+@dataclass
+class AssetExposureResult:
+    hazard_categories: Dict[type, Tuple[Category, float, str]]
+\end{lstlisting}
+
+\section{Overview}
+
+\texttt{AssetExposureResult} is a dataclass that encapsulates the exposure results for a single asset across multiple hazard types. It provides a structured way to store and access the categorized exposure levels, numerical values, and data sources for each hazard type applicable to an asset.
+
+\section{Components}
+
+\subsection{\texttt{@dataclass} Decorator}
+
+\begin{itemize}
+    \item This decorator automatically generates several methods for the class, including \texttt{\_\_init\_\_}, \texttt{\_\_repr\_\_}, and \texttt{\_\_eq\_\_}.
+    \item It simplifies the class definition by allowing you to focus on declaring the fields.
+\end{itemize}
+
+\subsection{\texttt{hazard\_categories} Field}
+
+\begin{itemize}
+    \item Type: \texttt{Dict[type, Tuple[Category, float, str]]}
+    \item This is the sole field of the class, containing all the exposure information for an asset.
+\end{itemize}
+
+\subsubsection{Key (Dict Key): \texttt{type}}
+\begin{itemize}
+    \item Represents the hazard type (e.g., \texttt{Wind}, \texttt{Fire}, \texttt{ChronicHeat}).
+    \item Using the type as a key allows for easy and type-safe access to specific hazard results.
+\end{itemize}
+
+\subsubsection{Value (Dict Value): \texttt{Tuple[Category, float, str]}}
+\begin{enumerate}
+    \item \texttt{Category}: An enum representing the exposure category (e.g., \texttt{LOW}, \texttt{MEDIUM}, \texttt{HIGH}).
+    \item \texttt{float}: The numerical value of the exposure measure.
+    \item \texttt{str}: A string representing the data source or path.
+\end{enumerate}
+
+\section{Usage}
+
+\begin{lstlisting}[language=Python]
+# Creating an instance
+result = AssetExposureResult(hazard_categories={
+    Wind: (Category.MEDIUM, 95.5, "wind/jupiter/v1/max_1min_RCP8.5_2050"),
+    ChronicHeat: (Category.HIGH, 25.3, "chronic_heat/days_above_35c"),
+    Fire: (Category.LOW, 0.15, "fire/probability")
+})
+
+# Accessing results
+wind_category, wind_value, wind_source = result.hazard_categories[Wind]
+print(f"Wind exposure: {wind_category.name}, Value: {wind_value}, Source: {wind_source}")
+
+# Iterating over all hazards
+for hazard_type, (category, value, source) in result.hazard_categories.items():
+    print(f"{hazard_type.__name__}: {category.name} (Value: {value}, Source: {source})")
+\end{lstlisting}
+
+\section{Key Features}
+
+\begin{enumerate}
+    \item \textbf{Typed Structure}: The use of types as dictionary keys provides clear and type-safe access to hazard-specific results.
+
+    \item \textbf{Comprehensive Information}: Each hazard entry contains not just the category, but also the numerical value and data source, providing context for the categorization.
+
+    \item \textbf{Flexibility}: Can accommodate any number of hazard types, allowing for easy extension to new hazards.
+
+    \item \textbf{Immutability}: As a dataclass, it's implicitly frozen (immutable) unless specified otherwise, ensuring data integrity after creation.
+
+    \item \textbf{Easy Serialization}: The simple structure makes it straightforward to serialize and deserialize, useful for storage or transmission.
+\end{enumerate}
+
+\section{Considerations and Potential Improvements}
+
+\begin{enumerate}
+    \item \textbf{Validation}: Consider adding validation to ensure all required hazard types are present and values are within expected ranges.
+
+    \item \textbf{Methods}: You might want to add methods for common operations, like getting all high-risk hazards or calculating an overall risk score.
+
+    \item \textbf{Customization}: If needed, you could add a \texttt{\_\_post\_init\_\_} method to perform any necessary post-initialization processing or validation.
+
+    \item \textbf{Documentation}: Adding docstrings would improve usability, especially if this class is part of a larger API.
+
+    \item \textbf{Type Hinting}: Consider using more specific types (e.g., \texttt{Type[Hazard]} instead of \texttt{type}) for better type checking and IDE support.
+\end{enumerate}
+
+\end{document}

@@ -1,0 +1,174 @@
+\documentclass{article}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{JupterExposureMeasure Detailed Explanation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+
+\texttt{JupterExposureMeasure} is a concrete implementation of the \texttt{ExposureMeasure} abstract base class. It provides specific logic for calculating exposure measures based on Jupiter data for various hazard types.
+
+\section{Class Definition}
+
+\begin{lstlisting}[language=Python]
+class JupterExposureMeasure(ExposureMeasure):
+    def __init__(self):
+        self.exposure_bins = self.get_exposure_bins()
+
+    # Other methods...
+\end{lstlisting}
+
+\section{Key Methods}
+
+\subsection{\texttt{\_\_init\_\_(self)}}
+Initializes the exposure bins by calling \texttt{get\_exposure\_bins()}.
+
+\subsection{\texttt{get\_data\_requests(self, asset: Asset, *, scenario: str, year: int) -> Iterable[HazardDataRequest]}}
+Generates data requests for each hazard type and indicator.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{asset}: The asset for which to request data
+        \item \texttt{scenario}: Climate scenario
+        \item \texttt{year}: Year for which to request data
+    \end{itemize}
+    \item Returns: An iterable of \texttt{HazardDataRequest} objects
+\end{itemize}
+
+Notable features:
+\begin{itemize}
+    \item Uses a specific model for wind data
+    \item Requests data for all hazard types defined in \texttt{exposure\_bins}
+\end{itemize}
+
+\subsection{\texttt{get\_exposures(self, asset: Asset, data\_responses: Iterable[HazardDataResponse]) -> Dict[type, Tuple[Category, float, str]]}}
+Calculates exposures based on the received hazard data.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{asset}: The asset for which to calculate exposure
+        \item \texttt{data\_responses}: Iterable of hazard data responses
+    \end{itemize}
+    \item Returns: A dictionary mapping hazard types to exposure categories, values, and data paths
+\end{itemize}
+
+Key logic:
+\begin{itemize}
+    \item Handles both \texttt{HazardParameterDataResponse} and \texttt{HazardEventDataResponse}
+    \item Uses \texttt{np.searchsorted} to efficiently categorize exposure levels
+    \item Assigns \texttt{Category.NODATA} for NaN values
+\end{itemize}
+
+\subsection{\texttt{get\_exposure\_bins(self) -> Dict}}
+Defines the exposure bins for various hazard types.
+
+\begin{itemize}
+    \item Returns: A dictionary mapping (hazard\_type, indicator\_id) to (lower\_bounds, categories)
+\end{itemize}
+
+Hazard types covered:
+\begin{itemize}
+    \item CombinedInundation
+    \item ChronicHeat
+    \item Wind
+    \item Drought
+    \item Hail
+    \item Fire
+\end{itemize}
+
+\subsection{\texttt{bounds\_to\_lookup(self, bounds: Iterable[Bounds]) -> Tuple[np.ndarray, np.ndarray]}}
+Converts \texttt{Bounds} objects to numpy arrays for efficient lookup.
+
+\begin{itemize}
+    \item Parameters:
+    \begin{itemize}
+        \item \texttt{bounds}: Iterable of \texttt{Bounds} objects
+    \end{itemize}
+    \item Returns: Tuple of (lower\_bounds, categories) as numpy arrays
+\end{itemize}
+
+\section{Key Features}
+
+\begin{enumerate}
+    \item \textbf{Hazard-Specific Categorization}: 
+    Defines specific exposure categories for each hazard type, allowing for tailored risk assessment.
+
+    \item \textbf{Efficient Data Structures}: 
+    Uses numpy arrays for efficient categorization of exposure levels.
+
+    \item \textbf{Flexibility}: 
+    Can handle different types of hazard data responses (parameter and event data).
+
+    \item \textbf{Standardized Output}: 
+    Returns exposure results in a consistent format across all hazard types.
+\end{enumerate}
+
+\section{Usage Example}
+
+\begin{lstlisting}[language=Python]
+exposure_measure = JupterExposureMeasure()
+
+# Generate data requests for an asset
+data_requests = exposure_measure.get_data_requests(asset, scenario="RCP8.5", year=2050)
+
+# Assuming we have hazard_data_responses from a hazard model
+exposures = exposure_measure.get_exposures(asset, hazard_data_responses)
+
+# exposures will be a dictionary like:
+# {
+#     Wind: (Category.MEDIUM, 95.5, "wind/jupiter/v1/max_1min_RCP8.5_2050"),
+#     ChronicHeat: (Category.HIGH, 25.3, "chronic_heat/days_above_35c"),
+#     # ... other hazards ...
+# }
+\end{lstlisting}
+
+\section{Considerations and Potential Improvements}
+
+\begin{enumerate}
+    \item \textbf{Configurability}: The exposure bins are hardcoded. Consider making them configurable through external settings.
+
+    \item \textbf{Extensibility}: Adding new hazard types requires modifying \texttt{get\_exposure\_bins()}. A more dynamic approach could be beneficial.
+
+    \item \textbf{Error Handling}: Additional error checking could be implemented, especially for unexpected data formats.
+
+    \item \textbf{Performance}: For large-scale applications, consider optimizing the data processing, possibly using vectorized operations.
+
+    \item \textbf{Documentation}: Adding docstrings to methods would improve code readability and maintainability.
+\end{enumerate}
+
+\end{document}
